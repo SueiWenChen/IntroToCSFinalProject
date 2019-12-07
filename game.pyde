@@ -1,17 +1,17 @@
 # this is a modified version of the game "NS-SHAFT"
-import os, tkinter
+import os
 path = os.getcwd+'/'
 
-class myGUI:
-    def __init__(self):
-        self.main_window = tkinter.Tk()
-        self.game_frame = tkiner.Frame(self.main_window)
-        self.score_frame = tkiner.Frame(self.main_window)
-        self.health_frame = tkiner.Frame(self.main_window)
-        # press 's' to start
-        # press 'p' to pause and press again to resume
+# class myGUI:
+#     def __init__(self):
+#         self.main_window = tkinter.Tk()
+#         self.game_frame = tkiner.Frame(self.main_window)
+#         self.score_frame = tkiner.Frame(self.main_window)
+#         self.health_frame = tkiner.Frame(self.main_window)
+#         # press 's' to start
+#         # press 'p' to pause and press again to resume
         
-        thinter.mainloop()
+#         thinter.mainloop()
 
 class Platform:
     def __init__(self,x,y,img): # (x,y): upper-left corner, w = width
@@ -24,8 +24,11 @@ class Platform:
         self.y -= g.v
     
     def display(self):
-        image(img,#x,#y,#width,#height)
-    
+        # image(img,#x,#y,#width,#height)
+        noStroke()
+        fill(25,100,122)
+        rect(self.x,self.y,160,20)
+            
 class Ord(Platform):
     def __init__(self,x,y,img,num): # num is for indentification of platform types
         Platform.__init__(self,x,y,img)
@@ -40,13 +43,27 @@ class Spiky(Platform):
     def __init__(self,x,y,img,num):
         Platform.__init__(self,x,y,img)
         self.num = 2
+    def display(self):
+        noStroke()
+        fill(192,192,192)
+        rect(self.x,self.y,160,5)
+        i = 0
+        while i < 16:
+            triangle(self.x+10*i,self.y,self.x+10*i+5,self.y-15,self.x+10*(i+1),self.y)  
+            i += 1      
     
 class Flip(Platform):
     def __init__(self,x,y,img,num):
         Platform.__init__(self,x,y,img)
         self.num = 3
     def display(self):
-        # we need images of the flipping
+        # the platform gradually 'disappers'
+        noStroke()
+        if p.flip_range == []:
+            fill(0)
+        else:
+            fill(255-255*(p.y-p.flip_range[1])/20)
+        rect(self.x,self.y,160,20)
 
 class Conveyor(Platform):
     def __init__(self,x,y,r,img,v,num):
@@ -54,14 +71,26 @@ class Conveyor(Platform):
         self.num = 4
         self.v = v # +5: right; -5: left
     def display(self):
-        # we can potentially add animation to this
+        noStroke()
+        fill(0,0,255)
+        rect(self.x,self.y,160,20)
+        fill(255,255,0)
+        if self.v > 0:
+            triangle(self.x+60,self.y+5,self.x+60,self.y+15,self.x+100,self.y+10)
+        else:
+            triangle(self.x+100,self.y+5,self.x+100,self.y+15,self.x+60,self.y+10)
+    
     
 class Spring(Platform):
     def __init__(self,x,y,r,img,num):
         Platform.__init__(self,x,y,img)
         self.num = 5
     def display(self):
-        # we need images of the elastic movement
+        noStroke()
+        fill(0,0,255)
+        rect(self.x,self.y,160,20)
+        fill(255,255,0)
+        triangle(self.x+80,self.y+5,self.x+60,self.y+15,self.x+100,self.y+15)        
 
 class Obstacles:
     def __init__(self,x,y,img): # (x,y): upper-left corner
@@ -83,8 +112,14 @@ class Top_spike:
     def init(self,x,y,img):
         self.x = 0
         self.y = 0
-        img = loadImage(path+'images/top_spike')
-
+    def display(self):
+        noStroke()
+        fill(192,192,192)
+        i = 0
+        while i < 80:
+            triangle(10*i,0,10*i+5,10,10*(i+1),0)  
+            i += 1      
+            
 class HealthBar:
     def __init__(self):
         self.h = 12
@@ -140,6 +175,7 @@ class Player:
                 # sound effect of disappearing
         if not on_a_platform:
             self.v_fall += 0.4
+            self.flip_range = []
         
     def effects(self): 
         if self.number == 5: # when hitting a spring
@@ -216,7 +252,7 @@ class Player:
             # restart the game
             
     
-    def display(self)    
+    # def display(self)    
 
 class Background:
     def __init__(self,img):
@@ -262,9 +298,7 @@ class Game:
         self.v_down += self.delta_v_down # increase the downward speed 
         self.number = -1 # reset the platform type for the next loop
 
-# put the game in the frame, and display the frame in the window
 
-# we can use rectangles as platforms and produce animation mathematically
 # sounds and images need to be added
 # a csv file to instantiate objects needs to be created, with data readily available
 
