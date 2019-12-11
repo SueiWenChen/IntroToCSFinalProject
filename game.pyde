@@ -1,27 +1,17 @@
 # this is a modified version of the game "NS-SHAFT"
 import os
-path = os.getcwd+'/'
-
-# class myGUI:
-#     def __init__(self):
-#         self.main_window = tkinter.Tk()
-#         self.game_frame = tkiner.Frame(self.main_window)
-#         self.score_frame = tkiner.Frame(self.main_window)
-#         self.health_frame = tkiner.Frame(self.main_window)
-#         # press 's' to start
-#         # press 'p' to pause and press again to resume
-        
-#         thinter.mainloop()
+path = os.getcwd() + '/'
+inputFile = open(path+'data.csv','r')
 
 class Platform:
-    def __init__(self,x,y,img): # (x,y): upper-left corner, w = width
+    def __init__(self,x,y): # (x,y): upper-left corner, w = width
         self.x = x
         self.y = y
-        self.w = w
+        self.w = 160
         # self.img = loadImage(path+'images/'+img)
     
-    def update(self):
-        self.y -= g.v
+    # def update(self):
+    #     self.y -= g.v
     
     def display(self):
         # image(img,#x,#y,#width,#height)
@@ -30,18 +20,18 @@ class Platform:
         rect(self.x,self.y,160,20)
             
 class Ord(Platform):
-    def __init__(self,x,y,img,num): # num is for indentification of platform types
-        Platform.__init__(self,x,y,img)
+    def __init__(self,x,y): # num is for indentification of platform types
+        Platform.__init__(self,x,y)
         self.num = 0
 
 class Fake(Platform):
-    def __init__(self,x,y,img,num):
-        Platform.__init__(self,x,y,img)
+    def __init__(self,x,y):
+        Platform.__init__(self,x,y)
         self.num = 1
 
 class Spiky(Platform):
-    def __init__(self,x,y,img,num):
-        Platform.__init__(self,x,y,img)
+    def __init__(self,x,y):
+        Platform.__init__(self,x,y)
         self.num = 2
     def display(self):
         noStroke()
@@ -53,8 +43,8 @@ class Spiky(Platform):
             i += 1      
     
 class Flip(Platform):
-    def __init__(self,x,y,img,num):
-        Platform.__init__(self,x,y,img)
+    def __init__(self,x,y):
+        Platform.__init__(self,x,y)
         self.num = 3
     def display(self):
         # the platform gradually 'disappers'
@@ -66,8 +56,8 @@ class Flip(Platform):
         rect(self.x,self.y,160,20)
 
 class Conveyor(Platform):
-    def __init__(self,x,y,r,img,v,num):
-        Platform.__init__(self,x,y,img)
+    def __init__(self,x,y,v):
+        Platform.__init__(self,x,y)
         self.num = 4
         self.v = v # +5: right; -5: left
     def display(self):
@@ -82,8 +72,8 @@ class Conveyor(Platform):
     
     
 class Spring(Platform):
-    def __init__(self,x,y,r,img,num):
-        Platform.__init__(self,x,y,img)
+    def __init__(self,x,y):
+        Platform.__init__(self,x,y)
         self.num = 5
     def display(self):
         noStroke()
@@ -124,21 +114,22 @@ class HealthBar:
     def __init__(self):
         self.h = 12
     
-    # def display(self): # h <= 12 Q: how to display in a specific frame?
-    #     strokeWeight(5)
-    #     stroke(0)
-    #     fill(255,255,0)
-    #     for i in range(p.h):
-    #         rect(10,20)
-    #     fill(255)
-    #     for i in range(12-p.h):
-    #         rect(10,20)        
-            
+    def display(self): # h <= 12
+        strokeWeight(5)
+        stroke(0)
+        noFill()
+        rect(900,400,120,20)
+        fill(255,255,0)
+        noStroke()
+        for i in range(p.h):
+            rect(900+10*i,400,10,20)
+
+        
 class Player:
     def __init__(self,x,y): # (x,y): center, h: health
         self.x = x
         self.y = y
-        self.r = r
+        # self.r = r
         self.vx = 0
         self.v_fall = 0
         self.dvx = 0 # velocity of conveyor belts
@@ -246,7 +237,7 @@ class Player:
 
             self.landed = 0 # updates are done
         
-        if self.die():
+        # if self.die():
             # sound effect
             # display a pop-up window showing 'game over' and 'press [something] to restart'
             # restart the game
@@ -254,24 +245,45 @@ class Player:
     
     # def display(self)    
 
-class Background:
-    def __init__(self,img):
-        self.img = loadImage(path+'images/'+img)
+# class Background:
+#     def __init__(self,img):
+#         self.img = loadImage(path+'images/'+img)
 
 class Game:
-    def __init__(self,y,v_down,delta_v_down,platform,bgd):
-        self.y = y # the 'height' of the game
+    def __init__(self):
+        self.y = 0 # the 'height' of the game
         self.v_down = 100 # velocity of the downward movement
         self.delta_v_down = 1/1000 
-        self.platform = platform
-        self.bgd = bgd
+        # self.bgd = bgd
         self.score = self.y//800
-        # instantiate relevant objects here
+        self.platformList = []
+        # temporary
+        # for i in range(800):
+        #     self.platformList.append(Ord((100+80*i)%800,100+100*i,0))
+        self.player = Player(380,400)
+        
+        # instantiate objects
+        for line in inputFile:
+            line = line.strip().split(",")
+            if line[0] == 0:
+                self.platformList.append(Ord(line[1],line[2]))
+            elif line[0] == 1:
+                self.platformList.append(Ord(line[1],line[2]))
+            elif line[0] == 2:
+                self.platformList.append(Ord(line[1],line[2]))
+            elif line[0] == 3:
+                self.platformList.append(Ord(line[1],line[2]))
+            elif line[0] == 4:
+                self.platformList.append(Ord(line[1],line[2],line[3]))
+            elif line[0] == 5:
+                self.platformList.append(Ord(line[1],line[2]))
+            
     
     def display(self):
-        #print the background
-        #print the player and the platforms
-        
+        # g.player.display()
+        for p in g.platformList:
+            p.display()
+            
     
     def update(self):
         # move up all the objects (potentially except the player) and the scope appears to move down 
@@ -303,8 +315,6 @@ class Game:
 # a csv file to instantiate objects needs to be created, with data readily available
 
 
-my_gui = myGUI()
-# instantiate the game somwhere
 
 def keyPressed():
     if keyCode == LEFT:
@@ -330,4 +340,12 @@ def keyReleased():
         g.player.keyHandler[RIGHT] = False
     elif keyCode == UP:
         g.player.keyHandler[UP] = False
+g = Game()        
+def setup():
+    size(800,1200)
+    background(255)
+def draw():
+    g.display()
+
+    
     
