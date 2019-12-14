@@ -45,7 +45,6 @@ class Flip(Platform):
         Platform.__init__(self,x,y)
         self.num = 3
     def display(self):
-        # the platform gradually 'disappers'
         noStroke()
         fill(255,100,0,150)
         rect(self.x,self.y,160,20)
@@ -103,7 +102,6 @@ class Bottom_spike:
         self.y = 7200
     def display(self):
         noStroke()
-
         fill(169,169,169)
         i = 0 
         while i < 10:
@@ -156,7 +154,6 @@ class Player:
         self.vx = 0
         self.v_fall = 0
         self.dvx = 0 # velocity caused by conveyor belts
-        self.fv = 0.05 # velocity of flipping down
         self.keyHandler={LEFT:False, RIGHT:False, UP:False}
         self.h = 12
         self.number = 0 # the type of platform on which the player stands
@@ -226,7 +223,6 @@ class Player:
                             self.dvx =0    
                     break
 
-
             if not self.on_a_platform:
                 self.v_fall += 0.4
                         
@@ -260,12 +256,12 @@ class Player:
                 g.aidList.remove(a)
                 break                    
 
-    def die(self):
+    def die(self): # run out of health or run into the top or bottom spike
         if self.h <= 0 or self.y <= self.r or self.y > 800 or self.y == g.b.y-80:
             return True         
     
     def display(self):
-        fill(0,0,0,255*self.h/12)
+        fill(0,0,0,255*self.h/12) # the transparency of the player changes according to its health
         circle(self.x,self.y,70)    
 
 
@@ -369,14 +365,12 @@ class Game:
                 if a.y < -20:
                     self.aidList.remove(a)
 
-            self.level = int((self.b.y+801)//800)  
-            self.v_down = [0,4.5,4,3.5,3,2.5,2,1.5,0.8,0.8][self.level - 1]
+            self.level = int((self.b.y+801)//800) # the score/progress of the game comes here 
+            self.v_down = [0,4.5,4,3.5,3,2.5,2,1.5,0.8,0.8][self.level - 1] # dynamically adjust the speed of the game
             if self.b.y < 800:
                 self.v_down = 0
                 self.level = 1
-        
-    
-            # self.player.number = -1 # reset the platform type for the next loop
+
             self.t += 0.05 # change of text color
             if self.player.die():
                 self.gameoverSound.play()
@@ -417,7 +411,6 @@ def mouseClicked(): # it executes the indented code after it whenever the mouse 
     if g.mouseHandler['Clicking'] == True:
         restart = True   
         
-# use "noLoop" to stop the loop?
 def keyPressed():
     if keyCode == LEFT:
         g.player.keyHandler[LEFT] = True
