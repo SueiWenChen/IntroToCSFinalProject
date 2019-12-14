@@ -344,8 +344,8 @@ class Game:
             
     
     def update(self):
-        global restart
-        if restart == False:
+        global restart, start
+        if restart == False and start == False:
             self.player.update()
             # move up all the objects (potentially except the player) and the scope appears to move down
             for p in self.platformList:
@@ -376,7 +376,7 @@ class Game:
                 if self.mouseHandler['Clicking'] == True and 865<mouseX<1145 and 625<mouseY<715:
                     restart = True
 
-                                 
+start = True                            
 restart = False
 g = Game()
               
@@ -388,7 +388,41 @@ def setup():
     rect(800,0,5,800)
     
 def draw():
-    global restart, g, inputFile, inputFile1
+    global start, restart, g, inputFile, inputFile1
+    if start == True:
+        background(0)
+        fill(0)
+        rect(800,0,5,800)
+        noStroke()
+        fill(0,250,150,50)
+        rect(0,0,800,800)
+        fill(0)
+        rect(800,0,5,800)
+        fill(0,200,100,200)
+        rect(805,0,400,800)
+        textSize(80)
+        fill(255,0,0)
+        text('ROLL!!!!!',840,100)
+        fill(255,0,0)
+        textSize(80)
+        stroke(0)
+        fill(0,255,0)
+        rect(865,625,280,90)
+        fill(150,0,0)
+        text("START",880,700)
+        fill(255,200,200)
+        textSize(50)
+        text('Get to the bottom',100,200)
+        text('with the up/right/left key',100,250)
+        text('Watch out for the spikes!',100,300)
+        text("Don't fall!",100,350)
+        textSize(60)
+        text('Click "START" to start',50,450)
+        restart = False
+        if g.mouseHandler['Clicking'] == True and 865<mouseX<1145 and 625<mouseY<715:
+            start = False
+            restart = True
+        
     if restart == True:
         del g
         restart = False
@@ -397,9 +431,10 @@ def draw():
         inputFile1.close()
         inputFile1 = open(path+'health.csv','r')
         g = Game()
-    background(255)
-    g.display()
-    g.update()
+    if restart == False and start == False:
+        background(255)
+        g.display()
+        g.update()
 
 
 def mousePressed(): # it executes the indented code after it whenever the mouse is pressed
