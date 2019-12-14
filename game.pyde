@@ -1,17 +1,18 @@
 # this is a modified version of the game "NS-SHAFT"
+add_library('minim')
 import os
 path = os.getcwd() + '/'
 inputFile = open(path+'data.csv','r')
+inputFile1=open(path+'health.csv','r')
+soundplayer = Minim(this)
 
 class Platform:
     def __init__(self,x,y): # (x,y): upper-left corner, w = width
         self.x = x
         self.y = y
         self.w = 160
-        # self.img = loadImage(path+'images/'+img)
     
     def display(self):
-        # image(img,#x,#y,#width,#height)
         noStroke()
         fill(25,100,122)
         rect(self.x,self.y,160,20)
@@ -76,21 +77,15 @@ class Spring(Platform):
         fill(255,255,0)
         triangle(self.x+80,self.y+5,self.x+60,self.y+15,self.x+100,self.y+15)        
 
-# class Obstacles:
-#     def __init__(self,x,y,img): # (x,y): upper-left corner
-#         self.x = x
-#         self.y = y
-#         self.w = w # width
-#         self.h = h # height
-#         self.img = loadImage(path+'images/'+img)
-
-# class Supplements:
-#     def __init__(self,x,y,l,w,img): # (x,y): upper-left corner
-#         self.x = x
-#         self.y = y
-#         self.h = h # height
-#         self.w = w # width
-#         self.img = loadImage(path+'images/'+img)
+class Aid:
+    def __init__(self,x,y): # (x,y): upper-left corner
+        self.x = x
+        self.y = y
+    def display(self):
+        noStroke()
+        fill(255,0,0)
+        rect(self.x-20,self.y-10,40,20)
+        rect(self.x-10,self.y-20,20,40)
  
 class Top_spike:
     def __init__(self):
@@ -169,10 +164,14 @@ class Player:
         self.flip_range = [] # the range within which the player flips
         self.on_a_platform = True
         self.on_flip = False
-        self.btm = 0 # the bottom of each flip
+        self.bounceSound = soundplayer.loadFile(path + "sound/bounce.mp3")
+        self.landSound = soundplayer.loadFile(path+"sound/land.mp3")
+        self.getSound = soundplayer.loadFile(path+'sound/get.mp3')
+        self.vanishSound = soundplayer.loadFile(path+'sound/vanish.mp3')
 
     def update(self): # if the player is on a proper platform, stop falling; otherwise fall
         if self.y >= g.real.y+100 and g.real.x-50<self.x<g.real.x+50: # if the player wins
+            g.winSound.play()
             fill(20,20,20)
             rect(0,0,800,800)
             textSize(100)
@@ -193,9 +192,12 @@ class Player:
                         self.v_fall = p.y - (self.y+self.r) - g.v_down # land on a platform
                         self.landed = 1
                         self.on_a_platform = True
+                        self.landSound.rewind()
+                        self.landSound.play()
                     else:
                         g.platformList.remove(p)
-                        # sound effect of disappearing
+                        self.vanishSound.rewind()
+                        self.vanishSound.play()
                         self.landed = 0
                     break
                 if p.y-1<self.y + self.r < p.y +1 and p.x <= self.x + 10 and self.x-10 <= p.x+p.w: #if on a platform
@@ -204,6 +206,8 @@ class Player:
                     if p.num == 3:
                         self.v_fall = 0.5-g.v_down 
                     elif p.num == 5:
+                        self.bounceSound.rewind()
+                        self.bounceSound.play()
                         self.v_fall = -15
                         if self.h < 12 and self.landed == 1:
                             self.h += 1
@@ -234,8 +238,6 @@ class Player:
                 self.vx = 0
         
             if self.keyHandler[UP] and self.on_a_platform==True:
-                # self.jumpSound.rewind()
-                # self.jumpSound.play()
                 self.v_fall = -10
     
             # move
@@ -246,14 +248,17 @@ class Player:
                 self.x = self.r 
             if self.x + self.r > 800:
                 self.x = 800 - self.r
-            # # # the player is cannot run into obstacles or platforms
-            # for o in g.obstacles:
-            #     if self.keyHandler[LEFT] and o.x<self.x<o.x+o.w and o.y<self.y<o.y+o.h:
-            #         self.x = o.x+o.w
-            #     if self.keyHandler[RIGHT] and o.x<self.x<o.x+o.w and o.y<self.y<o.y+o.h:
-            #         self.x = o.x
-            #     if o.x<self.x<o.x+o.w and o.y<self.y<o.y+o.h and self.v_fall>0:
-                    
+            
+        for a in g.aidList:
+            if self.h < 12 and a.x-self.r-20<self.x<a.x+self.r+20 and a.y-self.r-20<self.y<a.y+self.r+20:
+                self.h = 12
+                g.aidList.remove(a)
+                self.getSound.rewind()
+                self.getSound.play()
+                break
+            if a.x-self.r-20<self.x<a.x+self.r+20 and a.y-self.r-20<self.y<a.y+self.r+20:
+                g.aidList.remove(a)
+                break                    
 
     def die(self):
         if self.h <= 0 or self.y <= self.r or self.y > 800 or self.y == g.b.y-80:
@@ -266,6 +271,8 @@ class Player:
 
 class Game:
     def __init__(self):
+        self.gameoverSound = soundplayer.loadFile(path+'sound/gameover.mp3')
+        self.winSound = soundplayer.loadFile(path+'sound/win.mp3')
         self.mouseHandler = {'Clicking':False}
         self.y = 0 # the "apparent" ceiling height of the game
         self.v_down = 1 # velocity of the downward movement
@@ -293,6 +300,10 @@ class Game:
                 self.platformList.append(Conveyor(int(line[1]),int(line[2]),float(line[3])))
             elif int(line[0]) == 5:
                 self.platformList.append(Spring(int(line[1]),int(line[2])))
+        self.aidList = []
+        for line in inputFile1:
+            line = line.strip().split(",")
+            self.aidList.append(Aid(float(line[0]),float(line[1])))
             
     def display(self):
         fill(0)
@@ -320,6 +331,8 @@ class Game:
         self.h.display()
         for p in self.platformList:
             p.display()
+        for a in self.aidList:
+            a.display()
         self.s.display()
         self.b.display()
         self.real.display()
@@ -345,21 +358,17 @@ class Game:
             self.b.y -= self.v_down
             self.real.y -= self.v_down
             self.fake.y -= self.v_down
-            # for o in self.obstacles:
-            #     o.y -= self.v_down
-            # for s in self.supplements:
-            #     s.y -= self.v_down
+            for a in self.aidList:
+                a.y -= self.v_down
             
-            # delete upper platforms/supplements/obstacles in order not to slow down the speed of execution
+            # delete upper platforms/supplements in order not to slow down the speed of execution
             for p in self.platformList:
                 if p.y < -20:
                     self.platformList.remove(p)
-            # for s in self.supplements:
-            #     if s.y < -20:
-                    # self.platformList.remove(s)
-            # for o in self.obstacles:
-            #     if o.y < -20:
-                    # self.platformList.remove(o)
+            for a in self.aidList:
+                if a.y < -20:
+                    self.aidList.remove(a)
+
             self.level = int((self.b.y+801)//800)  
             self.v_down = [0,4.5,4,3.5,3,2.5,2,1.5,0.8,0.8][self.level - 1]
             if self.b.y < 800:
@@ -370,8 +379,10 @@ class Game:
             # self.player.number = -1 # reset the platform type for the next loop
             self.t += 0.05 # change of text color
             if self.player.die():
+                self.gameoverSound.play()
                 if self.mouseHandler['Clicking'] == True and 865<mouseX<1145 and 625<mouseY<715:
                     restart = True
+
                                  
 restart = False
 g = Game()
@@ -384,12 +395,14 @@ def setup():
     rect(800,0,5,800)
     
 def draw():
-    global restart, g, inputFile
+    global restart, g, inputFile, inputFile1
     if restart == True:
         del g
         restart = False
         inputFile.close()
         inputFile = open(path+'data.csv','r')
+        inputFile1.close()
+        inputFile1 = open(path+'health.csv','r')
         g = Game()
     background(255)
     g.display()
