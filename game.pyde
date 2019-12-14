@@ -17,7 +17,7 @@ class Platform:
         fill(25,100,122)
         rect(self.x,self.y,160,20)
             
-class Ord(Platform):
+class Ordinary(Platform):
     def __init__(self,x,y): # num is for indentification of platform types
         Platform.__init__(self,x,y)
         self.num = 0
@@ -40,7 +40,7 @@ class Spiky(Platform):
             triangle(self.x+10*i,self.y,self.x+10*i+5,self.y-15,self.x+10*(i+1),self.y)  
             i += 1      
     
-class Flip(Platform):
+class Jelly(Platform):
     def __init__(self,x,y):
         Platform.__init__(self,x,y)
         self.num = 3
@@ -86,7 +86,7 @@ class Aid:
         rect(self.x-20,self.y-10,40,20)
         rect(self.x-10,self.y-20,20,40)
  
-class Top_spike:
+class TopSpike:
     def __init__(self):
         self.y = 0
     def display(self):
@@ -97,7 +97,7 @@ class Top_spike:
             triangle(10*i,0,10*i+5,10,10*(i+1),0)  
             i += 1  
 
-class Bottom_spike:
+class BottomSpike:
     def __init__(self):
         self.y = 7200
     def display(self):
@@ -158,7 +158,6 @@ class Player:
         self.h = 12
         self.number = 0 # the type of platform on which the player stands
         self.landed = 0 # 1 means landed and updates are yet to be made; 0 otherwise
-        self.flip_range = [] # the range within which the player flips
         self.on_a_platform = True
         self.on_flip = False
         self.bounceSound = soundplayer.loadFile(path + "sound/bounce.mp3")
@@ -276,8 +275,8 @@ class Game:
         self.t = 0
         # instantiate objects
         self.player = Player(480,100)
-        self.s = Top_spike()
-        self.b = Bottom_spike()
+        self.s = TopSpike()
+        self.b = BottomSpike()
         self.real = Tube(560)
         self.fake = Tube(240)
         self.h = HealthBar()
@@ -285,13 +284,13 @@ class Game:
         for line in inputFile:
             line = line.strip().split(",")
             if int(line[0]) == 0:
-                self.platformList.append(Ord(int(line[1]),int(line[2])))
+                self.platformList.append(Ordinary(int(line[1]),int(line[2])))
             elif int(line[0]) == 1:
                 self.platformList.append(Fake(int(line[1]),int(line[2])))
             elif int(line[0]) == 2:
                 self.platformList.append(Spiky(int(line[1]),int(line[2])))
             elif int(line[0]) == 3:
-                self.platformList.append(Flip(int(line[1]),int(line[2])))
+                self.platformList.append(Jelly(int(line[1]),int(line[2])))
             elif int(line[0]) == 4:
                 self.platformList.append(Conveyor(int(line[1]),int(line[2]),float(line[3])))
             elif int(line[0]) == 5:
